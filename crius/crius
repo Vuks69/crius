@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+print(
+    """Hello there, General Kenobi.
+I've heard an another server needs your help."""
+)
