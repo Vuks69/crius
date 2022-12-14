@@ -33,6 +33,7 @@ for key in hosts_with_ssh:
         host.update(services)
         s.logout()
 
-json_string = json.dumps(hosts_with_ssh, indent=4)
+data = data.update(hosts_with_ssh)
+json_string = json.dumps(data, indent=4)
 with open('json_data.json', 'w') as outfile:
     outfile.write(json_string)
