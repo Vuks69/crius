@@ -63,8 +63,8 @@ def parse_nmap_xml():
                 jhost.update(ports)
                 if ssh_port != -1:
                     jhost.update(
-                        {"ssh": 1}
-                    )  # this should set the ssh port for the ssh script!
+                        {"ssh": ssh_port}
+                    )
                 break
         if not found:
             jhost = {
