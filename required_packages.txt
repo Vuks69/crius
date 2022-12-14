@@ -1,0 +1,4 @@
+arp-scan
+nmap
+python3
+openssh-client

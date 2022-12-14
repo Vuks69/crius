@@ -2,6 +2,12 @@
 
 Univeristy project, aiming at creating an universal infratructure and service inventory and management tool.
 
+## Usage
+
+    sudo python arp-scan.py [interface]
+    python nmap.py <address/network> [minimal|full]
+    python ssh.py
+
 ## Goals
 
 Consolidate SNMP, CDP, LLDP and script automation via SSH into a simple, easy to use tool that anyone can utilize.
