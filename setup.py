@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="crius",
     version="0.1",
-    scripts=["crius/crius"],
+    scripts=["crius/crius", "arp-scan.py", "crius/nmap.py"],
     author="KS, MM, DW",
     author_email="",
     description="Simple network discovery script",
