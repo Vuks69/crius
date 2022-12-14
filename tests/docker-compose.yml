@@ -8,14 +8,14 @@ services:
   webserver:
     image: tomcat:9.0
     ports:
-      - '80:8080'
+      - '8080'
     networks:
       - intnet
 
   ftpserver:
     image: fclairamb/ftpserver
     ports:
-      - '2121-2130:2121-2130'
+      - '2121-2130'
     volumes:
       - ./ftp/files:/tmp
       - ./ftp:/app
