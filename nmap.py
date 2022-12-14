@@ -6,21 +6,6 @@ import sys
 import json
 
 
-if len(sys.argv) == 2:
-    nmap(sys.argv[1])
-elif len(sys.argv) == 3:
-    nmap(sys.argv[1], sys.argv[2])
-elif len(sys.argv) == 4:
-    nmap(sys.argv[1], sys.argv[2], sys.argv[3])
-else:
-    print("Syntax:")
-    print("nmap.py <address range or network> [minimal|full] [interface]")
-    print("Example: crius 10.0.0.0/24 minimal eth0")
-    exit(1)
-
-parse_nmap_xml()
-
-
 def nmap(
     address: str,
     mode: str = None,
@@ -53,9 +38,9 @@ def parse_nmap_xml():
         hosts = json.load(fd)
 
     for host in root.iter("host"):
-        # status = host.find("status").attrib["state"]
         addr = host.find("address").attrib["addr"]
         ports = {"ports": {}}
+        ssh_port = -1
         if host.find("ports") is not None:
             for port in host.find("ports").iter("port"):
                 ports["ports"].update(
@@ -67,14 +52,43 @@ def parse_nmap_xml():
                         }
                     }
                 )
+                if port.find("service").attrib["name"] == "ssh":
+                    ssh_port = port.attrib["portid"]
 
+        found = False
         for key in hosts:
             jhost = hosts[key]
             if jhost["IP Address"] == addr:
+                found = True
                 jhost.update(ports)
+                if ssh_port != -1:
+                    jhost.update(
+                        {"ssh": 1}
+                    )  # this should set the ssh port for the ssh script!
                 break
+        if not found:
+            jhost = {
+                "IP Address": addr,
+            }
+            jhost.update(ports)
+            hosts.update({addr: jhost})
 
     json_string = json.dumps(hosts, indent=4)
 
     with open("json_data.json", "w") as outfile:
         outfile.write(json_string)
+
+
+if len(sys.argv) == 2:
+    nmap(sys.argv[1])
+elif len(sys.argv) == 3:
+    nmap(sys.argv[1], sys.argv[2])
+elif len(sys.argv) == 4:
+    nmap(sys.argv[1], sys.argv[2], sys.argv[3])
+else:
+    print("Syntax:")
+    print("nmap.py <address range or network> [minimal|full] [interface]")
+    print("Example: crius 10.0.0.0/24 minimal eth0")
+    exit(1)
+
+parse_nmap_xml()
