@@ -62,14 +62,14 @@ def parse_nmap_xml():
                 found = True
                 jhost.update(ports)
                 if ssh_port != -1:
-                    jhost.update(
-                        {"ssh": ssh_port}
-                    )
+                    jhost.update({"ssh": ssh_port})
                 break
         if not found:
             jhost = {
                 "IP Address": addr,
             }
+            if ssh_port != -1:
+                jhost.update({"ssh": ssh_port})
             jhost.update(ports)
             hosts.update({addr: jhost})
 
