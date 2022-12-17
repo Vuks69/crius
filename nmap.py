@@ -3,8 +3,7 @@
 import xml.etree.ElementTree as ET
 import subprocess
 import sys
-import json
-from handleJson import *
+from handleJson import readJson, writeJson
 
 
 def nmap(

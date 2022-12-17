@@ -2,7 +2,7 @@ import time
 import json
 
 
-def readJson():
+def readJson() -> dict:
     with open("json_data.json") as fd:
         hosts = json.load(fd)
     return hosts
