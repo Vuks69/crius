@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 import subprocess
 import sys
 import json
-from handleJson import writeJson
+from handleJson import *
 
 
 def nmap(
@@ -22,7 +22,7 @@ def nmap(
     command = ["nmap"]
     if mode == "minimal":
         command += ["-nsP"]
-    elif mode == "full" or mode == "services":
+    elif mode in ("full", "services"):
         command += ["-sV"]
 
     if interface is not None:
@@ -36,9 +36,7 @@ def nmap(
 def parse_nmap_xml():
     xmlRoot = ET.parse("nmap_out.xml").getroot()
 
-    hosts: dict
-    with open("json_data.json") as fd:
-        hosts = json.load(fd)
+    hosts = readJson()
 
     for host in xmlRoot.iter("host"):
         addr = host.find("address").attrib["addr"]
@@ -60,7 +58,7 @@ def parse_nmap_xml():
 
         found = False
         for key in hosts:
-            jhost = hosts[key]
+            jhost: dict = hosts[key]
             if jhost["IP Address"] == addr:
                 found = True
                 jhost.update(ports)
