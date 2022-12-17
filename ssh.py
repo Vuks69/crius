@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
-import json
 from pexpect import pxssh
+from handleJson import readJson, writeJson
 
-# Opening JSON file
-f = open("json_data.json")
-
-# returns JSON object as
-# a dictionary
-data = json.load(f)
+data = readJson()
 
 hosts_with_ssh = {k: v for k, v in data.items() if "ssh" in v.keys()}
 
@@ -35,7 +30,4 @@ for key in hosts_with_ssh:
         host.update(services)
         s.logout()
 
-data = data.update(hosts_with_ssh)
-json_string = json.dumps(data, indent=4)
-with open("json_data.json", "w") as outfile:
-    outfile.write(json_string)
+writeJson(data)
