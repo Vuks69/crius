@@ -57,6 +57,8 @@ def parse_nmap_xml():
 
         found = False
         for key in hosts:
+            if key == "timestamp":
+                continue
             jhost: dict = hosts[key]
             if jhost["IP Address"] == addr:
                 found = True
@@ -65,13 +67,11 @@ def parse_nmap_xml():
                     jhost.update({"ssh": ssh_port})
                 break
         if not found:
-            jhost = {
-                "IP target_spec": addr,
-            }
+            jhost = {"IP Address": addr}
             if ssh_port != -1:
                 jhost.update({"ssh": ssh_port})
             jhost.update(ports)
-            hosts.update({addr: jhost})
+            hosts.update({len(hosts.keys()) - 1: jhost})
 
     writeJson(hosts)
 
@@ -90,7 +90,7 @@ Examples:
     ./nmap.py 10.0.0.0-10
     ./nmap.py 10.0.0.0/24 minimal
     ./nmap.py 10.0.2.0/24 full eth0
-    ./nmap.py 10.0.0-2./24 minimal eth0"""
+    ./nmap.py 10.0.0-2.0-254 minimal eth0"""
     )
     sys.exit(1)
 
