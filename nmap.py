@@ -43,17 +43,18 @@ def parse_nmap_xml():
         ssh_port = -1
         if host.find("ports") is not None:
             for port in host.find("ports").iter("port"):
-                ports["ports"].update(
-                    {
-                        port.attrib["portid"]: {
-                            "state": port.find("state").attrib["state"],
-                            "service": port.find("service").attrib["name"],
-                            "product": port.find("service").attrib.get("product"),
+                if port.find("state").attrib["state"] != "unknown":
+                    ports["ports"].update(
+                        {
+                            port.attrib["portid"]: {
+                                "state": port.find("state").attrib["state"],
+                                "service": port.find("service").attrib["name"],
+                                "product": port.find("service").attrib.get("product"),
+                            }
                         }
-                    }
-                )
-                if port.find("service").attrib["name"] == "ssh":
-                    ssh_port = port.attrib["portid"]
+                    )
+                    if port.find("service").attrib["name"] == "ssh":
+                        ssh_port = port.attrib["portid"]
 
         found = False
         for key in hosts:
@@ -65,7 +66,9 @@ def parse_nmap_xml():
                 if "ports" in jhost.keys():
                     for portnum in jhost["ports"]:
                         if jhost["ports"][portnum]["product"] not in (None, "null"):
-                            ports["ports"][portnum]["product"] = jhost["ports"][portnum]["product"]
+                            ports["ports"][portnum]["product"] = jhost["ports"][
+                                portnum
+                            ]["product"]
                 jhost.update(ports)
                 if ssh_port != -1:
                     jhost.update({"ssh": ssh_port})
