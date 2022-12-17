@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import subprocess
-import json
 import sys
+from handleJson import writeJson
 
 arp_scan_args = ["arp-scan", "--localnet"]
 
@@ -18,7 +18,7 @@ parsed = out.decode().split("\n")[2:-4]
 # <IP Address>     <Hardware Address>     <Vendor Details>
 
 i = 0
-info_dict = {}
+found_hosts = {}
 for row in parsed:
     split_row = row.split("\t")
     ip_addr, mac_addr, vendor_details = split_row
@@ -32,7 +32,7 @@ for row in parsed:
     out, err = process.communicate()
     fingerprint, os = out.decode().strip().split("\t")[1:]
 
-    info_dict.update(
+    found_hosts.update(
         {
             i: {
                 "IP Address": ip_addr,
@@ -46,7 +46,4 @@ for row in parsed:
 
     i += 1
 
-json_string = json.dumps(info_dict, indent=4)
-
-with open("json_data.json", "w") as outfile:
-    outfile.write(json_string)
+writeJson(found_hosts)

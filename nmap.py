@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import subprocess
 import sys
 import json
+from handleJson import writeJson
 
 
 def nmap(
@@ -76,10 +77,7 @@ def parse_nmap_xml():
             jhost.update(ports)
             hosts.update({addr: jhost})
 
-    json_string = json.dumps(hosts, indent=4)
-
-    with open("json_data.json", "w") as outfile:
-        outfile.write(json_string)
+    writeJson(hosts)
 
 
 if len(sys.argv) == 2:
@@ -89,9 +87,15 @@ elif len(sys.argv) == 3:
 elif len(sys.argv) == 4:
     nmap(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
-    print("Syntax:")
-    print("nmap.py <target_spec range or network> [minimal|full] [interface]")
-    print("Example: crius 10.0.0.0/24 minimal eth0")
+    print(
+        """Syntax:
+./nmap.py <target_spec range or network> [minimal|full] [interface]
+Examples:
+    ./nmap.py 10.0.0.0-10
+    ./nmap.py 10.0.0.0/24 minimal
+    ./nmap.py 10.0.2.0/24 full eth0
+    ./nmap.py 10.0.0-2./24 minimal eth0"""
+    )
     sys.exit(1)
 
 parse_nmap_xml()
