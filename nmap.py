@@ -34,15 +34,14 @@ def nmap(
 
 
 def parse_nmap_xml():
-    tree = ET.parse("nmap_out.xml")
-    root = tree.getroot()
+    xmlRoot = ET.parse("nmap_out.xml").getroot()
 
     hosts: dict
     with open("json_data.json") as fd:
         hosts = json.load(fd)
 
-    for host in root.iter("host"):
-        addr = host.find("target_spec").attrib["addr"]
+    for host in xmlRoot.iter("host"):
+        addr = host.find("address").attrib["addr"]
         ports = {"ports": {}}
         ssh_port = -1
         if host.find("ports") is not None:
@@ -62,7 +61,7 @@ def parse_nmap_xml():
         found = False
         for key in hosts:
             jhost = hosts[key]
-            if jhost["IP target_spec"] == addr:
+            if jhost["IP Address"] == addr:
                 found = True
                 jhost.update(ports)
                 if ssh_port != -1:
