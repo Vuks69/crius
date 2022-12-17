@@ -7,12 +7,15 @@ import json
 
 
 def nmap(
-    address: str,
+    target_spec: str,
     mode: str = None,
     interface: str = None,
 ):
-    if address is None:
-        print("No address or network provided. Exiting.")
+    """
+    nmap [Scan Type(s)] [Options] {target specification}
+    """
+    if target_spec is None:
+        print("No target_spec or network provided. Exiting.")
         sys.exit(1)
 
     command = ["nmap"]
@@ -24,7 +27,7 @@ def nmap(
     if interface is not None:
         command += ["-e", interface]
 
-    command += ["-oX", "nmap_out.xml", address]
+    command += ["-oX", "nmap_out.xml", target_spec]
     print(" ".join(command))
     subprocess.Popen(command).wait()
 
@@ -38,7 +41,7 @@ def parse_nmap_xml():
         hosts = json.load(fd)
 
     for host in root.iter("host"):
-        addr = host.find("address").attrib["addr"]
+        addr = host.find("target_spec").attrib["addr"]
         ports = {"ports": {}}
         ssh_port = -1
         if host.find("ports") is not None:
@@ -58,7 +61,7 @@ def parse_nmap_xml():
         found = False
         for key in hosts:
             jhost = hosts[key]
-            if jhost["IP Address"] == addr:
+            if jhost["IP target_spec"] == addr:
                 found = True
                 jhost.update(ports)
                 if ssh_port != -1:
@@ -66,7 +69,7 @@ def parse_nmap_xml():
                 break
         if not found:
             jhost = {
-                "IP Address": addr,
+                "IP target_spec": addr,
             }
             if ssh_port != -1:
                 jhost.update({"ssh": ssh_port})
@@ -87,8 +90,8 @@ elif len(sys.argv) == 4:
     nmap(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
     print("Syntax:")
-    print("nmap.py <address range or network> [minimal|full] [interface]")
+    print("nmap.py <target_spec range or network> [minimal|full] [interface]")
     print("Example: crius 10.0.0.0/24 minimal eth0")
-    exit(1)
+    sys.exit(1)
 
 parse_nmap_xml()
