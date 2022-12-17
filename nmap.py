@@ -62,9 +62,10 @@ def parse_nmap_xml():
             jhost: dict = hosts[key]
             if jhost["IP Address"] == addr:
                 found = True
-                for portnum in jhost["ports"]:
-                    if jhost["ports"][portnum]["product"] not in (None, "null"):
-                        ports["ports"][portnum]["product"] = jhost["ports"][portnum]["product"]
+                if "ports" in jhost.keys():
+                    for portnum in jhost["ports"]:
+                        if jhost["ports"][portnum]["product"] not in (None, "null"):
+                            ports["ports"][portnum]["product"] = jhost["ports"][portnum]["product"]
                 jhost.update(ports)
                 if ssh_port != -1:
                     jhost.update({"ssh": ssh_port})
