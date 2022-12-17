@@ -3,7 +3,7 @@
 import xml.etree.ElementTree as ET
 import subprocess
 import sys
-import json
+from handleJson import readJson, writeJson
 
 
 def nmap(
@@ -21,7 +21,7 @@ def nmap(
     command = ["nmap"]
     if mode == "minimal":
         command += ["-nsP"]
-    elif mode == "full" or mode == "services":
+    elif mode in ("full", "services"):
         command += ["-sV"]
 
     if interface is not None:
@@ -35,9 +35,7 @@ def nmap(
 def parse_nmap_xml():
     xmlRoot = ET.parse("nmap_out.xml").getroot()
 
-    hosts: dict
-    with open("json_data.json") as fd:
-        hosts = json.load(fd)
+    hosts = readJson()
 
     for host in xmlRoot.iter("host"):
         addr = host.find("address").attrib["addr"]
@@ -45,40 +43,44 @@ def parse_nmap_xml():
         ssh_port = -1
         if host.find("ports") is not None:
             for port in host.find("ports").iter("port"):
-                ports["ports"].update(
-                    {
-                        port.attrib["portid"]: {
-                            "state": port.find("state").attrib["state"],
-                            "service": port.find("service").attrib["name"],
-                            "product": port.find("service").attrib.get("product"),
+                if port.find("state").attrib["state"] != "unknown":
+                    ports["ports"].update(
+                        {
+                            port.attrib["portid"]: {
+                                "state": port.find("state").attrib["state"],
+                                "service": port.find("service").attrib["name"],
+                                "product": port.find("service").attrib.get("product"),
+                            }
                         }
-                    }
-                )
-                if port.find("service").attrib["name"] == "ssh":
-                    ssh_port = port.attrib["portid"]
+                    )
+                    if port.find("service").attrib["name"] == "ssh":
+                        ssh_port = port.attrib["portid"]
 
         found = False
         for key in hosts:
-            jhost = hosts[key]
+            if key == "timestamp":
+                continue
+            jhost: dict = hosts[key]
             if jhost["IP Address"] == addr:
                 found = True
+                if "ports" in jhost.keys():
+                    for portnum in jhost["ports"]:
+                        if jhost["ports"][portnum]["product"] not in (None, "null"):
+                            ports["ports"][portnum]["product"] = jhost["ports"][
+                                portnum
+                            ]["product"]
                 jhost.update(ports)
                 if ssh_port != -1:
                     jhost.update({"ssh": ssh_port})
                 break
         if not found:
-            jhost = {
-                "IP target_spec": addr,
-            }
+            jhost = {"IP Address": addr}
             if ssh_port != -1:
                 jhost.update({"ssh": ssh_port})
             jhost.update(ports)
-            hosts.update({addr: jhost})
+            hosts.update({len(hosts.keys()) - 1: jhost})
 
-    json_string = json.dumps(hosts, indent=4)
-
-    with open("json_data.json", "w") as outfile:
-        outfile.write(json_string)
+    writeJson(hosts)
 
 
 if len(sys.argv) == 2:
@@ -88,9 +90,15 @@ elif len(sys.argv) == 3:
 elif len(sys.argv) == 4:
     nmap(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
-    print("Syntax:")
-    print("nmap.py <target_spec range or network> [minimal|full] [interface]")
-    print("Example: crius 10.0.0.0/24 minimal eth0")
+    print(
+        """Syntax:
+./nmap.py <target_spec range or network> [minimal|full] [interface]
+Examples:
+    ./nmap.py 10.0.0.0-10
+    ./nmap.py 10.0.0.0/24 minimal
+    ./nmap.py 10.0.2.0/24 full eth0
+    ./nmap.py 10.0.0-2.0-254 minimal eth0"""
+    )
     sys.exit(1)
 
 parse_nmap_xml()
